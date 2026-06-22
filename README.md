@@ -1,3 +1,7 @@
+#Application Demo video#
+https://drive.google.com/file/d/1AYhf8q8ANpYmDe4BiyLDg-kKRagsIBqC/view?usp=drivesdk
+
+
 # PriorityFlow - Tasks & Focus Timer
 
 PriorityFlow is a high-performance, web-based task management dashboard and productivity suite built using **Flask (Python)**, **SQLite3**, **HTML5**, **Bootstrap 5**, and **Lucide Icons**. 
@@ -5,7 +9,6 @@ PriorityFlow is a high-performance, web-based task management dashboard and prod
 It combines task tracking (with scheduling and priority badges) and focus aids (a Pomodoro timer and Stopwatch) in a unified, glassy user interface that supports persistent Light and Dark themes.
 
 ---
-**Application Demo video** [watch video](https://drive.google.com/drive/folders/1AJ8h11a63v63LKESCGCzuzLds07MXmuE)
 
 ## Features
 
