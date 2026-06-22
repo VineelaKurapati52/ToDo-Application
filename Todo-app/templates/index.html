@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriorityFlow - Tasks & Focus Timer</title>
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            /* Dark Theme Colors */
+            --bg-color-start: #060913;
+            --bg-color-end: #0f1526;
+            
+            /* High Glassmorphic Reflection Background */
+            --card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.01) 100%);
+            
+            /* Premium Thin Golden Shine Border & Shadow */
+            --card-border: rgba(212, 175, 55, 0.18);
+            --card-border-hover: rgba(212, 175, 55, 0.38);
+            --card-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.5);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --nav-bg: rgba(6, 9, 19, 0.6);
+            
+            --priority-high: #f87171;
+            --priority-medium: #fbbf24;
+            --priority-low: #22d3ee;
+            --priority-high-glow: rgba(239, 68, 68, 0.15);
+            --priority-medium-glow: rgba(245, 158, 11, 0.15);
+            --priority-low-glow: rgba(6, 182, 212, 0.15);
+
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+            --btn-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            --input-bg: rgba(255, 255, 255, 0.03);
+            --modal-bg: #0a0d1a;
+        }
+
+        /* Light Theme Colors override */
+        body.light-theme {
+            --bg-color-start: #f8fafc;
+            --bg-color-end: #e2e8f0;
+            
+            /* High Glassmorphic Reflection Background for Light Theme */
+            --card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.2) 100%);
+            
+            /* Warm Golden Shine Border & Shadow for Light Mode */
+            --card-border: rgba(197, 160, 89, 0.22);
+            --card-border-hover: rgba(197, 160, 89, 0.48);
+            --card-shadow: 0 20px 50px 0 rgba(139, 92, 26, 0.08);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --nav-bg: rgba(248, 250, 252, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.6);
+            --modal-bg: #ffffff;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-color-start) 0%, var(--bg-color-end) 100%);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            transition: color 0.4s;
+            background-attachment: fixed;
+        }
+
+        /* Override Bootstrap color utilities */
+        .text-primary {
+            color: var(--text-primary) !important;
+        }
+        .text-secondary {
+            color: var(--text-secondary) !important;
+        }
+        .navbar-text {
+            color: var(--text-secondary) !important;
+            transition: color 0.4s;
+        }
+
+        /* SUPER GLASSY CARD STYLING WITH GOLD SHINE BORDER & SHADOW */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(35px) saturate(220%);
+            -webkit-backdrop-filter: blur(35px) saturate(220%);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: background-color 0.4s, border-color 0.4s, box-shadow 0.4s;
+            color: var(--text-primary);
+        }
+        .glass-card:hover {
+            border-color: var(--card-border-hover);
+        }
+
+        .navbar {
+            background: var(--nav-bg) !important;
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--card-border);
+            transition: background-color 0.4s, border-color 0.4s;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Pure Custom Theme Toggle Button (With absolute outline reset) */
+        #themeToggleBtn {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary) !important;
+            border: 1px solid var(--card-border) !important;
+            background: rgba(255, 255, 255, 0.03) !important;
+            outline: none !important;
+            box-shadow: none !important;
+            transition: all 0.3s ease;
+        }
+        #themeToggleBtn:hover, #themeToggleBtn:focus, #themeToggleBtn:active {
+            color: var(--text-primary) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: var(--card-border-hover) !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        body.light-theme #themeToggleBtn {
+            background: rgba(0, 0, 0, 0.03) !important;
+        }
+        body.light-theme #themeToggleBtn:hover, body.light-theme #themeToggleBtn:focus {
+            background: rgba(0, 0, 0, 0.08) !important;
+        }
+
+        /* Super Glassy Stats Cards (No hover background color change) */
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            background: var(--card-bg);
+            backdrop-filter: blur(35px) saturate(220%);
+            -webkit-backdrop-filter: blur(35px) saturate(220%);
+            border-radius: 18px;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+        }
+
+        /* Stat cards hover only does scale/lift, no color change */
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--card-border-hover);
+            box-shadow: var(--card-shadow);
+        }
+
+        .stat-card-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            margin: 0 auto 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .stat-indigo .stat-card-icon { color: #6366f1; border-color: rgba(99, 102, 241, 0.2); }
+        .stat-warning .stat-card-icon { color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
+        .stat-success .stat-card-icon { color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
+        .stat-info .stat-card-icon { color: #06b6d4; border-color: rgba(6, 182, 212, 0.2); }
+
+        /* Form Inputs & Select option fix */
+        .form-control, .form-select {
+            background-color: var(--input-bg) !important;
+            border: 1px solid var(--card-border) !important;
+            color: var(--text-primary) !important;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15) !important;
+            border-color: var(--card-border-hover) !important;
+            outline: none !important;
+        }
+        
+        /* Dropdown options list visibility fix */
+        .form-select option {
+            background-color: #0b0f1d !important;
+            color: #f8fafc !important;
+        }
+        body.light-theme .form-select option {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+        }
+
+        body.light-theme ::placeholder {
+            color: #94a3b8 !important;
+        }
+
+        /* Buttons */
+        .btn-gradient {
+            background: var(--btn-gradient);
+            border: none;
+            color: white !important;
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        /* Task Row Card */
+        .task-card-item {
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .task-card-item:hover {
+            transform: scale(1.005) translateY(-2px);
+            border-color: var(--card-border-hover);
+            background: rgba(255, 255, 255, 0.03);
+            box-shadow: var(--card-shadow);
+        }
+        .task-text {
+            color: var(--text-primary);
+        }
+
+        /* Custom Completed Checkbox */
+        .btn-toggle-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--text-secondary);
+            background: transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+        }
+        .btn-toggle-status:hover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .btn-toggle-status.completed {
+            border-color: #10b981;
+            background: #10b981;
+            color: white !important;
+        }
+
+        /* Badges */
+        .badge-priority-high {
+            background-color: var(--priority-high-glow);
+            color: var(--priority-high);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            font-weight: 600;
+        }
+        .badge-priority-medium {
+            background-color: var(--priority-medium-glow);
+            color: var(--priority-medium);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            font-weight: 600;
+        }
+        .badge-priority-low {
+            background-color: var(--priority-low-glow);
+            color: var(--priority-low);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            font-weight: 600;
+        }
+
+        .btn-action-edit, .btn-action-del {
+            color: var(--text-secondary);
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+        }
+        .btn-action-edit:hover {
+            color: #6366f1;
+            border-color: var(--card-border-hover);
+            background: rgba(99, 102, 241, 0.06);
+        }
+        .btn-action-del:hover {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.06);
+        }
+
+        .task-completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+        .task-completed {
+            opacity: 0.7;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            background-color: var(--modal-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            color: var(--text-primary);
+        }
+        .modal-header, .modal-footer {
+            border-color: var(--card-border);
+        }
+        .modal-title {
+            color: var(--text-primary) !important;
+        }
+
+        /* Timer Widget Style */
+        .timer-nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 8px 16px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .timer-nav-btn.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+        }
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+        .timer-preset-btn {
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .timer-preset-btn:hover, .timer-preset-btn.active {
+            background: #6366f1;
+            color: white !important;
+            border-color: #6366f1;
+        }
+        
+        .btn-circle-control {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        .btn-timer-start {
+            background: #10b981;
+            color: white !important;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+        }
+        .btn-timer-start:hover {
+            background: #059669;
+        }
+        .btn-timer-pause {
+            background: #f59e0b;
+            color: white !important;
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+        }
+        .btn-timer-pause:hover {
+            background: #d97706;
+        }
+        .btn-timer-reset {
+            color: var(--text-primary) !important;
+        }
+        .btn-timer-reset:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        /* Clean close buttons in alerts and modals for light/dark theme */
+        .btn-close {
+            filter: var(--close-btn-filter, invert(1));
+            transition: filter 0.4s;
+        }
+        body.light-theme .btn-close {
+            --close-btn-filter: invert(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg mb-5 sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <i data-lucide="check-square" style="width: 24px; height: 24px; stroke: url(#brandGradStroke); stroke-width: 2.5;"></i>
+                <svg width="0" height="0">
+                    <defs>
+                        <linearGradient id="brandGradStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="100%" stop-color="#06b6d4"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="fs-4">PriorityFlow</span>
+            </a>
+            
+            <!-- Navbar Controls -->
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <button id="themeToggleBtn" class="d-flex align-items-center justify-content-center" title="Toggle Light/Dark Theme">
+                    <i data-lucide="moon" id="themeIcon" style="width: 20px; height: 20px;"></i>
+                </button>
+                <span class="navbar-text d-none d-sm-inline">
+                    High-Performance Task Management
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row justify-content-center">
+                    <div class="col-12 col-xl-11">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show glass-card border-0 shadow-sm mb-4" role="alert">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if category == 'success' %}
+                                        <i data-lucide="check-circle-2" class="text-success"></i>
+                                    {% elif category == 'warning' %}
+                                        <i data-lucide="alert-triangle" class="text-warning"></i>
+                                    {% else %}
+                                        <i data-lucide="alert-circle" class="text-danger"></i>
+                                    {% endif %}
+                                    <span class="text-primary">{{ message }}</span>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Dashboard Stats Row -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-12 col-xl-11">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card stat-indigo p-3 text-center">
+                            <div class="stat-card-icon">
+                                <i data-lucide="list-todo" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <p class="text-secondary small mb-1">ALL TASKS</p>
+                            <h2 class="fw-bold mb-0">{{ total }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card stat-warning p-3 text-center">
+                            <div class="stat-card-icon">
+                                <i data-lucide="clock" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <p class="text-secondary small mb-1">PENDING</p>
+                            <h2 class="fw-bold mb-0 text-warning">{{ pending }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card stat-success p-3 text-center">
+                            <div class="stat-card-icon">
+                                <i data-lucide="check-circle-2" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <p class="text-secondary small mb-1">COMPLETED</p>
+                            <h2 class="fw-bold mb-0 text-success">{{ completed }}</h2>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card stat-info p-3 text-center">
+                            <div class="stat-card-icon">
+                                <i data-lucide="percent" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <p class="text-secondary small mb-1">COMPLETION RATE</p>
+                            <h2 class="fw-bold mb-0 text-info">
+                                {% if total > 0 %}
+                                    {{ ((completed / total) * 100) | round | int }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Split Grid -->
+        <div class="row justify-content-center g-4">
+            
+            <!-- Left Side: Tasks Operations -->
+            <div class="col-12 col-lg-7 col-xl-7">
+                
+                <!-- Add Task Box -->
+                <div class="glass-card p-4 mb-4">
+                    <h3 class="fw-bold mb-4 text-primary">Add a New Task</h3>
+                    <form action="/add" method="POST">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-secondary small">TASK TITLE</label>
+                                <input type="text" name="task" placeholder="What needs to be done?" class="form-control" required autocomplete="off">
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <label class="form-label text-secondary small">DUE DATE</label>
+                                <input type="date" name="due_date" class="form-control">
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <label class="form-label text-secondary small">PRIORITY</label>
+                                <select name="priority" class="form-select">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="col-12 text-end mt-3">
+                                <button type="submit" class="btn btn-gradient px-4">
+                                    <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                                    <span>Add Task</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Task Listing -->
+                <div class="glass-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="fw-bold m-0 text-primary">My Schedule</h3>
+                        <span class="badge bg-secondary rounded-pill px-3 py-2 text-white">{{ pending }} Remaining</span>
+                    </div>
+
+                    {% if tasks %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for task in tasks %}
+                                <div class="task-card-item p-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 {% if task.completed == 1 %}task-completed{% endif %}">
+                                    
+                                    <!-- Left Section: Toggle & Title -->
+                                    <div class="d-flex align-items-center gap-3 w-100 w-sm-auto">
+                                        <a href="/toggle/{{ task.id }}" class="btn-toggle-status {% if task.completed == 1 %}completed{% endif %}" title="Toggle Completion Status">
+                                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                                        </a>
+                                        <span class="fs-5 fw-medium task-text">{{ task.task }}</span>
+                                    </div>
+                                    
+                                    <!-- Right Section: Badges & Actions -->
+                                    <div class="d-flex align-items-center gap-3 ms-auto ms-sm-0 flex-wrap">
+                                        
+                                        <!-- Due Date Badge -->
+                                        {% if task.due_date %}
+                                            <span class="badge bg-dark border border-secondary text-secondary rounded-pill px-2.5 py-1.5 small d-inline-flex align-items-center gap-1">
+                                                <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
+                                                {{ task.due_date }}
+                                            </span>
+                                        {% endif %}
+
+                                        <!-- Priority Badge -->
+                                        <span class="badge badge-priority-{{ task.priority | lower }} rounded-pill px-3 py-1.5 text-uppercase fs-7">
+                                            {{ task.priority }}
+                                        </span>
+
+                                        <!-- Action buttons -->
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-action-edit btn-sm rounded-circle" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#editModal{{ task.id }}" 
+                                                    title="Edit Task">
+                                                <i data-lucide="pencil" style="width: 15px; height: 15px;"></i>
+                                            </button>
+                                            <a href="/delete/{{ task.id }}" 
+                                               class="btn btn-action-del btn-sm rounded-circle" 
+                                               onclick="return confirm('Are you sure you want to delete this task?')" 
+                                               title="Delete Task">
+                                                <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i data-lucide="check-circle" style="width: 48px; height: 48px;" class="text-success mb-3"></i>
+                            <p class="fs-4 text-secondary mb-0">All caught up! Create a task above to begin.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- Right Side: Focus Timer Widget -->
+            <div class="col-12 col-lg-5 col-xl-4">
+                <div class="glass-card p-4 text-center sticky-lg-top" style="top: 100px;">
+                    <div class="d-flex justify-content-center gap-2 mb-4 border-bottom border-secondary pb-3">
+                        <button id="tabPomodoro" class="timer-nav-btn active" onclick="switchTimerTab('pomodoro')">
+                            <i data-lucide="timer" style="width: 16px; height: 16px;"></i>
+                            <span>Pomodoro</span>
+                        </button>
+                        <button id="tabStopwatch" class="timer-nav-btn" onclick="switchTimerTab('stopwatch')">
+                            <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                            <span>Stopwatch</span>
+                        </button>
+                    </div>
+
+                    <!-- Timer Screen -->
+                    <div class="py-4">
+                        <div id="timerDisplay" class="timer-display mb-2">25:00</div>
+                        <div id="timerLabel" class="text-secondary small text-uppercase tracking-wider fw-semibold mb-4">Focus Session</div>
+                    </div>
+
+                    <!-- Preset Options for Pomodoro -->
+                    <div id="pomodoroPresets" class="d-flex justify-content-center gap-2 mb-4">
+                        <button id="presetFocus" class="timer-preset-btn active px-3 py-1.5" onclick="setPreset(25, 'Focus Session', 'presetFocus')">Focus (25m)</button>
+                        <button id="presetShort" class="timer-preset-btn px-3 py-1.5" onclick="setPreset(5, 'Short Break', 'presetShort')">Break (5m)</button>
+                        <button id="presetLong" class="timer-preset-btn px-3 py-1.5" onclick="setPreset(15, 'Long Break', 'presetLong')">Long (15m)</button>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="d-flex justify-content-center align-items-center gap-3">
+                        <button id="timerResetBtn" class="btn-circle-control btn-timer-reset" onclick="resetTimer()" title="Reset">
+                            <i data-lucide="rotate-ccw" style="width: 18px; height: 18px;"></i>
+                        </button>
+                        <button id="timerPlayPauseBtn" class="btn-circle-control btn-timer-start" onclick="toggleTimer()" title="Play">
+                            <i data-lucide="play" id="playPauseIcon" style="width: 18px; height: 18px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Edit Modals Loop rendered at document root level to avoid CSS stacking context bugs -->
+    {% if tasks %}
+        {% for task in tasks %}
+            <div class="modal fade" id="editModal{{ task.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ task.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold" id="editModalLabel{{ task.id }}">✏— Edit Task Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="/update/{{ task.id }}" method="POST">
+                            <div class="modal-body text-start">
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small">TASK TITLE</label>
+                                    <input type="text" name="new-task" value="{{ task.task }}" class="form-control" required autocomplete="off">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small">DUE DATE</label>
+                                    <input type="date" name="due_date" value="{{ task.due_date or '' }}" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-secondary small">PRIORITY</label>
+                                    <select name="priority" class="form-select">
+                                        <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
+                                        <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                        <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary rounded-3 text-white" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-gradient px-4">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Theme & Timer JavaScript Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // ----------------- Theme Switcher -----------------
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        
+        // Initialize Theme from localStorage or system preference
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'light') {
+            document.body.classList.add('light-theme');
+            themeIcon.setAttribute('data-lucide', 'sun');
+        } else {
+            themeIcon.setAttribute('data-lucide', 'moon');
+        }
+        lucide.createIcons();
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            let theme = 'dark';
+            if (document.body.classList.contains('light-theme')) {
+                theme = 'light';
+                themeIcon.setAttribute('data-lucide', 'sun');
+            } else {
+                themeIcon.setAttribute('data-lucide', 'moon');
+            }
+            localStorage.setItem('theme', theme);
+            lucide.createIcons();
+        });
+
+        // ----------------- Focus Timer Component -----------------
+        let activeTab = 'pomodoro'; // 'pomodoro' or 'stopwatch'
+        let timerInterval = null;
+        let isRunning = false;
+
+        // Pomodoro State
+        let pomodoroTimeRemaining = 25 * 60; // default 25 mins
+        let currentPresetMinutes = 25;
+        let pomodoroLabelText = 'Focus Session';
+
+        // Stopwatch State
+        let stopwatchTimeElapsed = 0; // in seconds
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerLabel = document.getElementById('timerLabel');
+        const timerPlayPauseBtn = document.getElementById('timerPlayPauseBtn');
+        const pomodoroPresets = document.getElementById('pomodoroPresets');
+
+        function switchTimerTab(tab) {
+            if (activeTab === tab) return;
+            resetTimer(); // Reset existing timer when switching
+
+            activeTab = tab;
+            document.getElementById('tabPomodoro').classList.toggle('active', tab === 'pomodoro');
+            document.getElementById('tabStopwatch').classList.toggle('active', tab === 'stopwatch');
+
+            if (tab === 'pomodoro') {
+                pomodoroPresets.style.setProperty('display', 'flex', 'important');
+                timerLabel.innerText = pomodoroLabelText;
+                updateDisplay(pomodoroTimeRemaining);
+            } else {
+                pomodoroPresets.style.setProperty('display', 'none', 'important');
+                timerLabel.innerText = 'Stopwatch (Infinite)';
+                updateDisplay(stopwatchTimeElapsed);
+            }
+        }
+
+        function updateDisplay(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+
+            const mStr = String(m).padStart(2, '0');
+            const sStr = String(s).padStart(2, '0');
+
+            if (activeTab === 'stopwatch' && h > 0) {
+                const hStr = String(h).padStart(2, '0');
+                timerDisplay.innerText = `${hStr}:${mStr}:${sStr}`;
+            } else {
+                timerDisplay.innerText = `${mStr}:${sStr}`;
+            }
+        }
+
+        function setPreset(mins, label, elementId) {
+            if (activeTab !== 'pomodoro') return;
+            resetTimer();
+            currentPresetMinutes = mins;
+            pomodoroTimeRemaining = mins * 60;
+            pomodoroLabelText = label;
+            timerLabel.innerText = label;
+            updateDisplay(pomodoroTimeRemaining);
+
+            // Toggle active class on preset buttons
+            document.querySelectorAll('.timer-preset-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(elementId).classList.add('active');
+        }
+
+        // Toggle timer status
+        function toggleTimer() {
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            isRunning = true;
+            timerPlayPauseBtn.className = 'btn-circle-control btn-timer-pause';
+            
+            // Query dynamic icon inside the button to prevent Lucide replacement stale reference bugs
+            const icon = timerPlayPauseBtn.querySelector('[data-lucide]');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'pause');
+            }
+            lucide.createIcons();
+
+            timerInterval = setInterval(() => {
+                if (activeTab === 'pomodoro') {
+                    if (pomodoroTimeRemaining > 0) {
+                        pomodoroTimeRemaining--;
+                        updateDisplay(pomodoroTimeRemaining);
+                    } else {
+                        // Timer finished
+                        triggerAlarm();
+                        resetTimer();
+                    }
+                } else {
+                    stopwatchTimeElapsed++;
+                    updateDisplay(stopwatchTimeElapsed);
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            timerPlayPauseBtn.className = 'btn-circle-control btn-timer-start';
+            
+            // Query dynamic icon inside the button to prevent Lucide replacement stale reference bugs
+            const icon = timerPlayPauseBtn.querySelector('[data-lucide]');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'play');
+            }
+            lucide.createIcons();
+            clearInterval(timerInterval);
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            if (activeTab === 'pomodoro') {
+                pomodoroTimeRemaining = currentPresetMinutes * 60;
+                updateDisplay(pomodoroTimeRemaining);
+            } else {
+                stopwatchTimeElapsed = 0;
+                updateDisplay(stopwatchTimeElapsed);
+            }
+        }
+
+        // Web Audio Synthesizer Beep (alarm sound, no external dependencies)
+        function triggerAlarm() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Beep multiple times
+                for (let i = 0; i < 3; i++) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime + i * 0.4); // A5 note
+                    
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime + i * 0.4);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.4 + 0.3);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(audioCtx.currentTime + i * 0.4);
+                    osc.stop(audioCtx.currentTime + i * 0.4 + 0.3);
+                }
+                alert("⏰ Time's up! Take a moment to refresh.");
+            } catch (e) {
+                console.log("Audio alert blocked or unsupported");
+            }
+        }
+    </script>
+</body>
+</html>
